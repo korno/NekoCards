@@ -1,0 +1,287 @@
+package uk.me.mikemike.nekocards
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlin.math.roundToInt
+
+@Composable
+fun QuizScreenActivity(deckId: Long){
+    val quizViewModel = viewModel<QuizViewModel>(
+        key = null,
+        factory =QuizViewModelFactory((LocalContext.current.applicationContext as NekoCardsApplication).deckDataRepository, deckId)
+    )
+    val quiz: MultipleChoiceQuiz? by quizViewModel.quiz.observeAsState()
+    val lastAnswerResult by quizViewModel.lastResult.observeAsState()
+    var showMistakeScreen by remember(lastAnswerResult) {
+        mutableStateOf(
+            if(lastAnswerResult == null){
+                false}
+            else{
+                !lastAnswerResult!!.result
+            }
+        )
+    }
+
+    quiz?.let {
+        when {
+            showMistakeScreen -> {
+                QuizScreen(quiz = it, true,
+                    OnAnswerChosen = {
+                        showMistakeScreen=false;
+                    })
+            }
+            it.isFinished -> {
+                QuizResults(quiz = it)
+            }
+            else -> {
+                QuizScreen(quiz = it, false,
+                    OnAnswerChosen = {
+                        quizViewModel.answerCurrentQuestion(it)
+                    })
+            }
+        }
+    }
+}
+
+@Composable
+fun QuizScreen(quiz: MultipleChoiceQuiz, showLastAnswerMode: Boolean,
+               OnAnswerChosen: (String) -> Unit,
+        ){
+    Scaffold(topBar = {
+        TopAppBar(title = {
+            Text(text=stringResource(R.string.quiz_screen_title_bar, quiz.sourceDeck.deck.name))
+        })}) {
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
+            ) {
+            QuizStatus(quiz = quiz)
+            if (showLastAnswerMode) {
+                Question(
+                    question = quiz.lastQuestionAnswer!!.question,
+                    OnAnswerChosen,
+                    stringResource(R.string.quiz_question_title, quiz.sourceDeck.deck.sideAName),
+                    stringResource(
+                        id = R.string.quiz_answer_title, quiz.sourceDeck.deck.sideBName
+                    ),
+                    showWrongAnswerMode = showLastAnswerMode
+                )
+            } else {
+                Question(
+                    question = quiz.currentQuestion!!,
+                    OnAnswerChosen,
+                    stringResource(R.string.quiz_question_title, quiz.sourceDeck.deck.sideAName),
+                    stringResource(
+                        id = R.string.quiz_answer_title, quiz.sourceDeck.deck.sideBName
+                    ),
+                    showWrongAnswerMode = false
+                )
+
+            }
+        }
+    }
+
+}
+
+@Composable
+fun QuizStatus(quiz: MultipleChoiceQuiz) {
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .background(MaterialTheme.colors.primaryVariant)
+        .padding(top = 8.dp, bottom = 8.dp), horizontalArrangement = Arrangement.SpaceAround) {
+        Text(color=MaterialTheme.colors.onPrimary, text=
+        stringResource(
+            id = R.string.quiz_question_count,
+            quiz.questionCount - quiz.remainingQuestionCount,
+            quiz.questionCount
+        ))
+        Text(color=MaterialTheme.colors.onPrimary, text=stringResource(R.string.quiz_correct_question_count, quiz.numberOfCorrectAnswers))
+        Text(color=MaterialTheme.colors.onPrimary, text=stringResource(R.string.quiz_incorrect_question_count, quiz.numberOfWrongAnswers))
+}
+}
+
+@Composable
+fun QuizResults(quiz: MultipleChoiceQuiz){
+    Scaffold(topBar = {
+        TopAppBar(title = {
+            Text(text=stringResource(R.string.quiz_screen_title_bar, quiz.sourceDeck.deck.name))
+        })}) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+        ) {
+            QuizStatus(quiz = quiz)
+            Text(modifier= Modifier.fillMaxWidth() ,textAlign = TextAlign.Center, style=MaterialTheme.typography.h6,
+                text = stringResource(R.string.quiz_score_title))
+
+            Text(modifier= Modifier.fillMaxWidth() ,textAlign = TextAlign.Center, style=MaterialTheme.typography.h1,
+                text = stringResource(R.string.quiz_score_label, quiz.correctPercentageOfTotalQuiz))
+            Divider()
+            Text(modifier= Modifier.fillMaxWidth() ,textAlign = TextAlign.Center, style=MaterialTheme.typography.h6,
+                text = "Mistakes")
+
+            LazyColumn(modifier = Modifier
+                .padding(it)
+                .padding(bottom = 50.dp))
+            {
+                items(quiz.questionMistakes, key={result->result.question.sourceCard.cardId}){ result->
+                    QuestionResultItem(result)
+               }
+            }
+        }
+    }
+}
+
+@Composable
+fun QuestionResultItem(res: QuestionResult){
+    Column(modifier=Modifier.fillMaxWidth().background(MaterialTheme.colors.error)) {
+        Row() {
+            Text(res.question.sourceCard.sideA)
+            Text(res.question.sourceCard.sideB)
+        }
+        Divider()
+    }
+}
+
+@Composable
+fun Question(question: MultipleChoiceQuestion, OnAnswerChosen: (String) -> Unit,
+             questionTitle: String = String.Empty, answerTitle: String = String.Empty, showWrongAnswerMode: Boolean = false){
+    Column() {
+
+        Card( elevation = 4.dp, modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp)
+            .weight(0.4f)) {
+            CardTitle(title = questionTitle)
+            Column (verticalArrangement = Arrangement.Center){
+                Text( modifier = Modifier.fillMaxWidth(),
+                    text = question.question, textAlign = TextAlign.Center, style=MaterialTheme.typography.h5)
+
+            }
+        }
+
+        if(showWrongAnswerMode){
+            Card( elevation = 4.dp, modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp)
+                .weight(0.4f)) {
+                Column(modifier=Modifier.fillMaxHeight()) {
+                    CardTitle(title = answerTitle)
+                    Column(
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                            .fillMaxHeight()
+                    ) {
+                        for (choice in question.choices) {
+                            if(question.correctAnswer.equals(choice, true)) {
+                                Button(
+                                    colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.error),
+                                    modifier = Modifier
+                                        .padding(bottom = 10.dp)
+                                        .fillMaxWidth(0.7f),
+                                    onClick = { OnAnswerChosen(choice) },
+                                    enabled = true  )
+                                { Text(text = choice) }
+                            }
+                            else {
+                                Button(
+                                    modifier = Modifier
+                                        .padding(bottom = 10.dp)
+                                        .fillMaxWidth(0.7f),
+                                    onClick = { OnAnswerChosen(choice) },
+                                    enabled = false
+                                )
+                                { Text(text = choice) }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else{
+            Card( elevation = 4.dp, modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp)
+                .weight(0.4f)) {
+                Column(modifier=Modifier.fillMaxHeight()) {
+                    CardTitle(title = answerTitle)
+                    Column(
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                            .fillMaxHeight()
+                    ) {
+                        for (choice in question.choices) {
+                            Button(
+                                modifier = Modifier
+                                    .padding(bottom = 10.dp)
+                                    .fillMaxWidth(0.7f),
+                                onClick = { OnAnswerChosen(choice) }) { Text(text = choice) }
+                        }
+                    }
+                }
+            }
+        }
+
+
+    }
+
+}
+
+
+@Composable
+fun CardTitle(title: String){
+    Column (modifier = Modifier
+        .fillMaxWidth()
+        .padding(top = 8.dp, start = 8.dp, end = 8.dp)){
+        Text(modifier=Modifier.padding(bottom = 8.dp), text=title)
+        Divider()
+    }
+}
+
+@Composable
+fun QuestionMistake(question: QuestionResult, onOk: () -> Unit ){
+    Column() {
+        Text(text = "You made a mistake, idiot!")
+        Button(onClick = onOk){Text("Next Question")}
+    }
+}
+
+@Composable
+@Preview
+fun QuestionResultPreview(){
+    val quiz: MultipleChoiceQuiz = with(MultipleChoiceQuiz(createTestDeck("Test", "Test description", 20), 3)) {
+        finishTestRandomly(this)
+        this
+    }
+    QuizResults(quiz)
+}
+
+@Composable
+@Preview
+fun QuestionPreview(){
+    val deck = createTestDeck("Test", "Test description", 20)
+    QuizScreen(quiz = MultipleChoiceQuiz(deck,3), OnAnswerChosen = {}, showLastAnswerMode = false)
+}

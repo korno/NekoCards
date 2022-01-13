@@ -1,0 +1,58 @@
+<resources>
+    <string name="app_name">NekoCards</string>
+
+    <string name="title_activity_main">MainActivity</string>
+
+    <string name="default_side_a_name">Side A</string>
+    <string name="default_side_b_name">Side B</string>
+
+    <string name="deck_list_screen_top_bar_title">My Decks</string>
+
+    <string name="deck_created_message">Deck Created</string>
+    <string name="deck_deleted_message">Deck Deleted</string>
+    <string name="card_created_message">Card Created</string>
+    <string name="card_deleted_message">Card Deleted</string>
+
+
+    <string name="create_deck_floating_action_icon_content_description">Create deck</string>
+
+    <string name="create_deck_floating_action_button">Create Deck</string>
+    <string name="delete_deck_dialog_title">Really Delete %s?</string>
+    <string name="delete_deck_dialog_message">Are you sure you want to delete the deck %s? This action cannot be undone.</string>
+    <string name="create_deck_dialog_title">Create New Deck</string>
+
+
+    <string name="deck_name_label">Deck Name</string>
+    <string name="deck_description_label">Deck Description</string>
+    <string name="deck_description_sideA_label">Card Side A Title</string>
+    <string name="deck_description_sideB_label">Card Side B Title</string>
+
+    <string name="bits_delete_button_text">Delete</string>
+    <string name="bits_cancel_button_text">Cancel</string>
+    <string name="bits_popmenu_content_description">Show more options</string>
+    <string name="bits_create_item_button_text">Create</string>
+    <string name="bits_update_item_button_label">Update</string>
+
+    <string name="new_deck_default_name"></string>
+    <string name="new_deck_default_description">It is a deck</string>
+
+
+    <string name="quiz_screen_title_bar">%s Quiz</string>
+    <string name="quiz_question_count"> Q:%d/%d</string>
+    <string name="quiz_correct_question_count">Correct: %d</string>
+    <string name="quiz_incorrect_question_count">Wrong: %d</string>
+
+    <string name="quiz_question_title">If the %s is…</string>
+    <string name="quiz_answer_title">…What is the %s?</string>
+    <string name="quiz_score_label">%d%%</string>
+    <string name="quiz_score_title">Results</string>
+
+    <string name="menu_label_edit">Edit</string>
+    <string name="menu_label_delete">Delete</string>
+
+    <string name="button_label_deck_quiz">Quiz</string>
+    <string name="content_description_deck_quiz">Take a quiz using this deck</string>
+    <string name="button_label_deck_study">Study</string>
+    <string name="content_description_deck_study">Study this deck</string>
+
+</resources>
