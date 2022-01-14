@@ -14,9 +14,11 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import uk.me.mikemike.nekocards.ui.theme.NekoCardsTheme
 
 
 typealias DeckMethod = (Deck) -> Unit
@@ -225,6 +227,16 @@ fun SingleDeckCardDisplay(deck: Deck, onSelect: DeckMethod, onEditSelect: DeckMe
         cardClick = { }
     )
 
+}
+
+@Preview
+@Composable
+fun DeckListPreview() {
+    NekoCardsTheme {
+        val decks =
+            mutableListOf(Deck(1, "deck1", "deck1", "sideA", "sideB"), Deck(2, "deck2", "deck2", "sideA", "sideB"))
+        DeckListScreen(decks, {}, {}, {}, {})
+    }
 }
 
 

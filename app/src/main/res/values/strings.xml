@@ -45,7 +45,7 @@
     <string name="quiz_question_title">If the %s is…</string>
     <string name="quiz_answer_title">…What is the %s?</string>
     <string name="quiz_score_label">%d%%</string>
-    <string name="quiz_score_title">Results</string>
+    <string name="quiz_score_title">Results for %s Quiz</string>
 
     <string name="menu_label_edit">Edit</string>
     <string name="menu_label_delete">Delete</string>

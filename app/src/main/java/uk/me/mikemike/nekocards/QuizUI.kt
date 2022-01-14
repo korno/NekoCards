@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import uk.me.mikemike.nekocards.ui.theme.NekoCardsTheme
 import kotlin.math.roundToInt
 
 @Composable
@@ -120,7 +121,7 @@ fun QuizStatus(quiz: MultipleChoiceQuiz) {
 fun QuizResults(quiz: MultipleChoiceQuiz){
     Scaffold(topBar = {
         TopAppBar(title = {
-            Text(text=stringResource(R.string.quiz_screen_title_bar, quiz.sourceDeck.deck.name))
+            Text(text=stringResource(R.string.quiz_score_title, quiz.sourceDeck.deck.name))
         })}) {
         Column(
             modifier = Modifier
@@ -128,14 +129,18 @@ fun QuizResults(quiz: MultipleChoiceQuiz){
                 .fillMaxHeight()
         ) {
             QuizStatus(quiz = quiz)
-            Text(modifier= Modifier.fillMaxWidth() ,textAlign = TextAlign.Center, style=MaterialTheme.typography.h6,
-                text = stringResource(R.string.quiz_score_title))
-
             Text(modifier= Modifier.fillMaxWidth() ,textAlign = TextAlign.Center, style=MaterialTheme.typography.h1,
-                text = stringResource(R.string.quiz_score_label, quiz.correctPercentageOfTotalQuiz))
-            Divider()
-            Text(modifier= Modifier.fillMaxWidth() ,textAlign = TextAlign.Center, style=MaterialTheme.typography.h6,
+                text = stringResource(R.string.quiz_score_label, quiz.correctPercentageOfTotalQuiz), color=MaterialTheme.colors.secondary)
+            Text(modifier= Modifier.fillMaxWidth() ,textAlign = TextAlign.Left, style=MaterialTheme.typography.h6,
                 text = "Mistakes")
+
+
+            Column(){
+                Row(modifier = Modifier.fillMaxWidth()){
+                    Text(modifier = Modifier.weight(0.5f), text =quiz.sourceDeck.deck.sideAName)
+                    Text(modifier = Modifier.weight(0.5f), text =quiz.sourceDeck.deck.sideBName)
+                }
+            }
 
             LazyColumn(modifier = Modifier
                 .padding(it)
@@ -151,11 +156,11 @@ fun QuizResults(quiz: MultipleChoiceQuiz){
 
 @Composable
 fun QuestionResultItem(res: QuestionResult){
-    Column(modifier=Modifier.fillMaxWidth().background(MaterialTheme.colors.error)) {
-        Row() {
-            Text(res.question.sourceCard.sideA)
-            Text(res.question.sourceCard.sideB)
-        }
+    Row(modifier = Modifier.fillMaxWidth()) {
+        Text(modifier = Modifier.weight(0.5f), text = res.question.sourceCard.sideA, textAlign = TextAlign.Left, color=MaterialTheme.colors.error)
+        Text(modifier = Modifier.weight(0.5f), text =res.question.sourceCard.sideB, textAlign = TextAlign.Left, color=MaterialTheme.colors.error)
+    }
+    Row(modifier=Modifier.fillMaxWidth()){
         Divider()
     }
 }
@@ -272,16 +277,25 @@ fun QuestionMistake(question: QuestionResult, onOk: () -> Unit ){
 @Composable
 @Preview
 fun QuestionResultPreview(){
-    val quiz: MultipleChoiceQuiz = with(MultipleChoiceQuiz(createTestDeck("Test", "Test description", 20), 3)) {
-        finishTestRandomly(this)
-        this
+    NekoCardsTheme {
+        val quiz: MultipleChoiceQuiz =
+            with(MultipleChoiceQuiz(createTestDeck("Test", "Test description", 20), 3)) {
+                finishTestRandomly(this)
+                this
+            }
+        QuizResults(quiz)
     }
-    QuizResults(quiz)
 }
 
 @Composable
 @Preview
-fun QuestionPreview(){
-    val deck = createTestDeck("Test", "Test description", 20)
-    QuizScreen(quiz = MultipleChoiceQuiz(deck,3), OnAnswerChosen = {}, showLastAnswerMode = false)
+fun QuestionPreview() {
+    NekoCardsTheme {
+        val deck = createTestDeck("Test", "Test description", 20)
+        QuizScreen(
+            quiz = MultipleChoiceQuiz(deck, 3),
+            OnAnswerChosen = {},
+            showLastAnswerMode = false
+        )
+    }
 }

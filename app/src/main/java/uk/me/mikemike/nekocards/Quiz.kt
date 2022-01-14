@@ -8,7 +8,7 @@ import kotlin.math.roundToInt
 data class MultipleChoiceQuestion(val question: String, val correctAnswer: String, val choices: List<String>,
                                   val sourceCard: Card)
 
-data class QuestionResult(val question: MultipleChoiceQuestion, val result: Boolean, val answer: String)
+data class QuestionResult(val question: MultipleChoiceQuestion, val result: Boolean, val answer: String, val quiz: MultipleChoiceQuiz)
 
 class MultipleChoiceQuiz(public val sourceDeck: DeckWithCards, private val numberOfChoicesToAdd: Int, private val numberOfQuestions: Int = sourceDeck.cards.size) {
 
@@ -92,7 +92,7 @@ class MultipleChoiceQuiz(public val sourceDeck: DeckWithCards, private val numbe
         if(isFinished){
             throw IllegalStateException("There is no current question - the test is finished?")
         }
-        val result = QuestionResult(currentQuestion!!, _currentQuestion!!.correctAnswer.trim().equals(answer.trim(), ignoreCase = true), answer)
+        val result = QuestionResult(currentQuestion!!, _currentQuestion!!.correctAnswer.trim().equals(answer.trim(), ignoreCase = true), answer, this)
         _questionResults.add(result)
         moveToNextQuestion()
         return result
