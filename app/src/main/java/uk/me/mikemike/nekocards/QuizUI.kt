@@ -129,22 +129,26 @@ fun QuizResults(quiz: MultipleChoiceQuiz){
                 .fillMaxHeight()
         ) {
             QuizStatus(quiz = quiz)
-            Text(modifier= Modifier.fillMaxWidth() ,textAlign = TextAlign.Center, style=MaterialTheme.typography.h1,
+            Text(modifier= Modifier.fillMaxWidth().padding(10.dp) ,textAlign = TextAlign.Center, style=MaterialTheme.typography.h1,
                 text = stringResource(R.string.quiz_score_label, quiz.correctPercentageOfTotalQuiz), color=MaterialTheme.colors.secondary)
-            Text(modifier= Modifier.fillMaxWidth() ,textAlign = TextAlign.Left, style=MaterialTheme.typography.h6,
+            Text(modifier= Modifier.fillMaxWidth().padding(10.dp) ,textAlign = TextAlign.Left, style=MaterialTheme.typography.h4,
                 text = "Mistakes")
 
 
-            Column(){
-                Row(modifier = Modifier.fillMaxWidth()){
-                    Text(modifier = Modifier.weight(0.5f), text =quiz.sourceDeck.deck.sideAName)
-                    Text(modifier = Modifier.weight(0.5f), text =quiz.sourceDeck.deck.sideBName)
+            Column(modifier=Modifier.padding(top=10.dp, bottom=0.dp, start=10.dp, end=10.dp)){
+                Row(modifier = Modifier.fillMaxWidth().padding(start=8.dp, end=8.dp, bottom=10.dp)){
+                    Text(modifier = Modifier.weight(0.5f), text =quiz.sourceDeck.deck.sideAName,
+                                style=MaterialTheme.typography.subtitle1)
+                    Text(modifier = Modifier.weight(0.5f), text =quiz.sourceDeck.deck.sideBName,
+                                style=MaterialTheme.typography.subtitle1)
+
                 }
+                Divider()
             }
 
             LazyColumn(modifier = Modifier
                 .padding(it)
-                .padding(bottom = 50.dp))
+                .padding(10.dp))
             {
                 items(quiz.questionMistakes, key={result->result.question.sourceCard.cardId}){ result->
                     QuestionResultItem(result)
@@ -156,7 +160,7 @@ fun QuizResults(quiz: MultipleChoiceQuiz){
 
 @Composable
 fun QuestionResultItem(res: QuestionResult){
-    Row(modifier = Modifier.fillMaxWidth()) {
+    Row(modifier = Modifier.fillMaxWidth().padding(start=8.dp, end=8.dp, top = 10.dp, bottom = 10.dp)) {
         Text(modifier = Modifier.weight(0.5f), text = res.question.sourceCard.sideA, textAlign = TextAlign.Left, color=MaterialTheme.colors.error)
         Text(modifier = Modifier.weight(0.5f), text =res.question.sourceCard.sideB, textAlign = TextAlign.Left, color=MaterialTheme.colors.error)
     }
