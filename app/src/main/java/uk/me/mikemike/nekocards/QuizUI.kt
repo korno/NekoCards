@@ -129,30 +129,91 @@ fun QuizResults(quiz: MultipleChoiceQuiz){
                 .fillMaxHeight()
         ) {
             QuizStatus(quiz = quiz)
-            Text(modifier= Modifier.fillMaxWidth().padding(10.dp) ,textAlign = TextAlign.Center, style=MaterialTheme.typography.h1,
-                text = stringResource(R.string.quiz_score_label, quiz.correctPercentageOfTotalQuiz), color=MaterialTheme.colors.secondary)
-            Text(modifier= Modifier.fillMaxWidth().padding(10.dp) ,textAlign = TextAlign.Left, style=MaterialTheme.typography.h4,
-                text = "Mistakes")
-
-
-            Column(modifier=Modifier.padding(top=10.dp, bottom=0.dp, start=10.dp, end=10.dp)){
-                Row(modifier = Modifier.fillMaxWidth().padding(start=8.dp, end=8.dp, bottom=10.dp)){
-                    Text(modifier = Modifier.weight(0.5f), text =quiz.sourceDeck.deck.sideAName,
-                                style=MaterialTheme.typography.subtitle1)
-                    Text(modifier = Modifier.weight(0.5f), text =quiz.sourceDeck.deck.sideBName,
-                                style=MaterialTheme.typography.subtitle1)
-
+            if (quiz.is100PercentPerfect) {
+                Column(modifier=Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.h1,
+                        text = stringResource(
+                            R.string.quiz_score_label,
+                            quiz.correctPercentageOfTotalQuiz
+                        ),
+                        color = MaterialTheme.colors.secondary
+                    )
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                        text = stringResource(R.string.quiz_perfect_score_label),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.h4
+                    )
                 }
-                Divider()
-            }
 
-            LazyColumn(modifier = Modifier
-                .padding(it)
-                .padding(10.dp))
-            {
-                items(quiz.questionMistakes, key={result->result.question.sourceCard.cardId}){ result->
-                    QuestionResultItem(result)
-               }
+            } else {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.h1,
+                    text = stringResource(
+                        R.string.quiz_score_label,
+                        quiz.correctPercentageOfTotalQuiz
+                    ),
+                    color = MaterialTheme.colors.secondary
+                )
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp),
+                    textAlign = TextAlign.Left,
+                    style = MaterialTheme.typography.h4,
+                    text = stringResource(R.string.quiz_mistakes_title)
+                )
+
+
+                Column(
+                    modifier = Modifier.padding(
+                        top = 10.dp,
+                        bottom = 0.dp,
+                        start = 10.dp,
+                        end = 10.dp
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 8.dp, end = 8.dp, bottom = 0.dp)
+                    ) {
+                        Text(
+                            modifier = Modifier.weight(0.5f), text = quiz.sourceDeck.deck.sideAName,
+                            style = MaterialTheme.typography.subtitle1
+                        )
+                        Text(
+                            modifier = Modifier.weight(0.5f), text = quiz.sourceDeck.deck.sideBName,
+                            style = MaterialTheme.typography.subtitle1
+                        )
+
+                    }
+                    Divider()
+                }
+
+                LazyColumn(
+                    modifier = Modifier
+                        .padding(it)
+                        .padding(10.dp)
+                )
+                {
+                    items(
+                        quiz.questionMistakes,
+                        key = { result -> result.question.sourceCard.cardId }) { result ->
+                        QuestionResultItem(result)
+                    }
+                }
             }
         }
     }
@@ -160,7 +221,9 @@ fun QuizResults(quiz: MultipleChoiceQuiz){
 
 @Composable
 fun QuestionResultItem(res: QuestionResult){
-    Row(modifier = Modifier.fillMaxWidth().padding(start=8.dp, end=8.dp, top = 10.dp, bottom = 10.dp)) {
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .padding(start = 8.dp, end = 8.dp, top = 10.dp, bottom = 10.dp)) {
         Text(modifier = Modifier.weight(0.5f), text = res.question.sourceCard.sideA, textAlign = TextAlign.Left, color=MaterialTheme.colors.error)
         Text(modifier = Modifier.weight(0.5f), text =res.question.sourceCard.sideB, textAlign = TextAlign.Left, color=MaterialTheme.colors.error)
     }
@@ -279,7 +342,7 @@ fun QuestionMistake(question: QuestionResult, onOk: () -> Unit ){
 }
 
 @Composable
-@Preview
+@Preview(group ="Test Results")
 fun QuestionResultPreview(){
     NekoCardsTheme {
         val quiz: MultipleChoiceQuiz =
@@ -301,5 +364,36 @@ fun QuestionPreview() {
             OnAnswerChosen = {},
             showLastAnswerMode = false
         )
+    }
+}
+
+@Composable
+@Preview
+fun QuestionPreviewWrongAnswer(){
+    NekoCardsTheme {
+        val deck = createTestDeck("Test", "Test description", 20)
+        QuizScreen(
+            quiz = with(MultipleChoiceQuiz(deck, 3))
+            {
+                this.answerCurrentQuestion("this is definitely wrong")
+                this
+            },
+            OnAnswerChosen = {},
+            showLastAnswerMode = true
+        )
+    }
+}
+
+
+@Composable
+@Preview(group="Test Results")
+fun QuestionResultsPerfect() {
+    NekoCardsTheme {
+        val deck = createTestDeck("Test", "Test Description", 20)
+        val quiz = with(MultipleChoiceQuiz(deck, 3)) {
+            finishTestPerfectly(this)
+            this
+        }
+        QuizResults(quiz)
     }
 }

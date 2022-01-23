@@ -3,7 +3,7 @@ package uk.me.mikemike.nekocards
 
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
-
+import kotlinx.serialization.Serializable
 
 @Entity(
     foreignKeys = [ForeignKey(
@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.Flow
         onDelete = ForeignKey.CASCADE
     )]
 )
+
+@Serializable
 data class Card (
     @PrimaryKey(autoGenerate = true) var cardId: Long,
     @ColumnInfo(name="deckId", index = true)
@@ -21,6 +23,7 @@ data class Card (
     @ColumnInfo(name = "side_b") var sideB: String
 )
 
+@Serializable
 @Entity
 data class Deck (
     @PrimaryKey(autoGenerate = true) var deckId: Long,
@@ -37,6 +40,7 @@ data class Deck (
 }
 
 
+@Serializable
 data class DeckWithCards (
     @Embedded var deck : Deck,
     @Relation(

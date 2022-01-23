@@ -47,6 +47,9 @@ class MultipleChoiceQuiz(public val sourceDeck: DeckWithCards, private val numbe
     val correctPercentageOfTotalQuiz: Int
         get() {return (100f * (numberOfCorrectAnswers.toFloat() / numberOfQuestions)).roundToInt()}
 
+    val is100PercentPerfect: Boolean
+        get() { return isFinished && numberOfWrongAnswers == 0}
+
     init {
         makeQuiz()
         startQuiz()
@@ -109,5 +112,11 @@ class MultipleChoiceQuiz(public val sourceDeck: DeckWithCards, private val numbe
 fun finishTestRandomly(quiz: MultipleChoiceQuiz){
     while(!quiz.isFinished){
         quiz.answerCurrentQuestion(quiz.currentQuestion!!.choices[0])
+    }
+}
+
+fun finishTestPerfectly(quiz: MultipleChoiceQuiz){
+    while(!quiz.isFinished){
+        quiz.answerCurrentQuestion(quiz.currentQuestion!!.correctAnswer)
     }
 }

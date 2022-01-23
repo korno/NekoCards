@@ -1,16 +1,23 @@
 package uk.me.mikemike.nekocards
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import uk.me.mikemike.nekocards.ui.theme.NekoCardsTheme
+
+typealias CardMethod = (Card)->Unit
+
 
 @Composable
 fun DeckEditScreen(
@@ -34,13 +41,17 @@ fun DeckEditScreen(
         mutableStateOf(null)
     }
 
+    var cardToDelete : Card? by remember{
+        mutableStateOf(null)
+    }
+
     Scaffold(content = {
 
         Column {
             Text("Name: " + deck.deck.name)
             Text("Description: " + deck.deck.description)
             Button(onClick = { showEditDialog = true }) { Text("Edit Name and Description") }
-            DeckCardsList(deck.cards, onDeleteCard, {
+            DeckCardsList(deck, {cardToDelete=it}, {
                 editingCard=it.copy()
                 showCardEditDialog=true
             })
@@ -55,12 +66,17 @@ fun DeckEditScreen(
         })
 
     when {
+        cardToDelete != null -> {
+            BitsConfirmItemDeleteDialog(
+                item = cardToDelete!! ,
+                title = { Text(stringResource(R.string.delete_card_confirmation_dialog)) } ,
+                message = {Text(stringResource(R.string.delete_card_confirmation_message))} ,
+                onCancel = { cardToDelete = null },
+                onConfirm = {onDeleteCard(it); cardToDelete=null}
+            )
+        }
         showEditDialog -> {
-            /*DeckDialog(startDeck = deck.deck, onCancel = { showEditDialog = false }, onFinish = {
-                showEditDialog = false
-                onEditDeck(it)
-            })*/
-            DeckEditDialog2(deck.deck.copy(), {
+            DeckEditDialog(deck.deck.copy(), {
                 showEditDialog=false
                 onEditDeck(it)},
                 {showEditDialog=false}
@@ -86,19 +102,46 @@ fun DeckEditScreen(
 }
 
 @Composable
-fun DeckCardsList(cards: List<Card>, onDelete: (Card) -> Unit, onEdit: (Card) -> Unit){
-    Row{
-        Text("Number of Cards: " + cards.size)
+fun DeckCardsList(deck: DeckWithCards, onDelete: (Card) -> Unit, onEdit: (Card) -> Unit){
+
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .padding(10.dp), verticalAlignment = Alignment.CenterVertically){
+        Text(modifier= Modifier
+            .weight(0.4f)
+            .padding(end = 8.dp), text=deck.deck.sideAName)
+        Text(modifier= Modifier
+            .weight(0.4f)
+            .padding(end = 8.dp), text=deck.deck.sideAName)
+        Spacer(modifier=Modifier.weight(0.2f))
     }
     LazyColumn() {
-        items(cards, key = {it.cardId}) { card ->
-            CardDisplay(card, onDelete, onEdit)
+        items(deck.cards, key = {it.cardId}) { card ->
+            CardEditDisplay(card, onEdit, onDelete)
         }
     }
 }
 
+
 @Composable
-fun DeckEditDialog2(deck: Deck, onConfirm: (Deck) -> Unit, onCancel: () -> Unit){
+fun CardEditDisplay(card: Card, onEdit: CardMethod = {}, onDelete: CardMethod = {}) {
+    Divider()
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(modifier= Modifier
+            .weight(0.4f)
+            .padding(end = 8.dp), text=card.sideA)
+        Text(modifier= Modifier
+            .weight(0.4f)
+            .padding(end = 8.dp), text=card.sideB)
+        BitsIconButton(true, Icons.Default.Edit,  String.Empty, {onEdit(card)})
+        BitsIconButton(true, Icons.Default.Delete,  String.Empty, {onDelete(card)})
+    }
+}
+
+@Composable
+fun DeckEditDialog(deck: Deck, onConfirm: (Deck) -> Unit, onCancel: () -> Unit){
     BitsEditItemDialog(
         item = deck,
         edit = { deck, update ->
@@ -127,3 +170,21 @@ fun DeckEditDialog2(deck: Deck, onConfirm: (Deck) -> Unit, onCancel: () -> Unit)
         isValid = {it.name.isNotEmpty()}
     )
 }
+
+
+@Preview
+@Composable
+fun DeckEditPreview(){
+    NekoCardsTheme() {
+        val deck = createTestDeck("name", "description", 20)
+        DeckEditScreen(
+            deck = deck,
+            onAddCard = {},
+            onDeleteCard = {},
+            onEditDeck = {},
+            onEditCard = {})
+    }
+}
+
+
+

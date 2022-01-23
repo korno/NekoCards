@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -37,7 +36,7 @@ class DeckDaoTest {
     @Test
     @Throws(Exception::class)
     fun addDeckAndGetSameDeck() = runBlocking {
-        var deck = Deck(0,"Test", "Description")
+        var deck = Deck(0,"Test", "Description", "sidea", "sideb")
         deckDataDao.insertDeck(deck)
         assertEquals(true, deckDataDao.getAllDecks().first()[0].name.equals("Test"))
     }
@@ -45,9 +44,9 @@ class DeckDaoTest {
     @Test
     @Throws(Exception::class)
     fun addMultipleDecksAndGetAll() = runBlocking {
-        var decks = listOf(Deck(0, "Deck1", "Description1"),
-                                Deck(0, "Deck2", "Description2"),
-                            Deck(0, "Deck3", "Description3"))
+        var decks = listOf(Deck(0, "Deck1", "Description1", "sidea", "sideb"),
+                                Deck(0, "Deck2", "Description2", "sidea", "sideb"),
+                            Deck(0, "Deck3", "Description3", "sidea", "sideb"))
         assertEquals(deckDataDao.insertDeck(decks).size, decks.size)
         assertEquals(deckDataDao.getAllDecks().first().size, decks.size)
     }
@@ -57,7 +56,7 @@ class DeckDaoTest {
     @Throws(Exception::class)
     fun addCardAndGetSameCard() = runBlocking {
         // we need a valid deck
-        val id = deckDataDao.insertDeck(Deck(0, "deck", "deckdesc"))
+        val id = deckDataDao.insertDeck(Deck(0, "deck", "deckdesc", "sidea", "sideb"))
         val card = Card(0, id, "a", "b")
         assertEquals(true, deckDataDao.insertCard(card) > 0)
         assertEquals(1, deckDataDao.getAllCards().first().size)
@@ -66,7 +65,7 @@ class DeckDaoTest {
     @Test
     @Throws(Exception::class)
     fun addDeckWithCardsAndGet() = runBlocking {
-        val deck = DeckWithCards(Deck(0, "deck1", "deck2"),
+        val deck = DeckWithCards(Deck(0, "deck1", "deck2", "sidea", "sideb"),
                        listOf(Card(0, 0, "a", "b"),
                                Card(0, 0, "a2", "b2")))
         val id = deckDataDao.insert(deck)
@@ -79,7 +78,7 @@ class DeckDaoTest {
     @Test
     @Throws(Exception::class)
     fun addDeckWithCardsAndGetDeckWithCards() = runBlocking {
-        val deck = DeckWithCards(Deck(0, "deck1", "deck2"),
+        val deck = DeckWithCards(Deck(0, "deck1", "deck2", "sidea", "sideb"),
             listOf(Card(0, 0, "a", "b"),
                 Card(0, 0, "a2", "b2")))
         val id = deckDataDao.insert(deck)
@@ -101,8 +100,8 @@ class DeckDaoTest {
     @Test
     @Throws(Exception::class)
     fun insertAndGetSingleDeck() = runBlocking{
-        val d1 = Deck(0, "deck1", "deck1description")
-        val d2 = Deck(0, "deck2", "deck2description")
+        val d1 = Deck(0, "deck1", "deck1description", "sidea", "sideb")
+        val d2 = Deck(0, "deck2", "deck2description", "sidea", "sideb")
         deckDataDao.insertDeck(d1)
         val id = deckDataDao.insertDeck(d2)
 

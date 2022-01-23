@@ -27,6 +27,10 @@
     <string name="deck_description_sideA_label">Card Side A Title</string>
     <string name="deck_description_sideB_label">Card Side B Title</string>
 
+
+    <string name="delete_card_confirmation_dialog">Really Delete Card</string>
+    <string name="delete_card_confirmation_message">Are you sure you want to delete this card? This action cannot be undone.</string>
+
     <string name="bits_delete_button_text">Delete</string>
     <string name="bits_cancel_button_text">Cancel</string>
     <string name="bits_popmenu_content_description">Show more options</string>
@@ -45,9 +49,11 @@
     <string name="quiz_question_title">If the %s is…</string>
     <string name="quiz_answer_title">…What is the %s?</string>
     <string name="quiz_score_label">%d%%</string>
-    <string name="quiz_score_title">Results for %s Quiz</string>
+    <string name="quiz_perfect_score_label">Perfect!</string>
+    <string name="quiz_score_title">%s Quiz Results</string>
+    <string name="quiz_mistakes_title">Mistakes</string>
 
-    <string name="menu_label_edit">Edit</string>
+    <string name="menu_label_edit">Edit</string>s
     <string name="menu_label_delete">Delete</string>
 
     <string name="button_label_deck_quiz">Quiz</string>

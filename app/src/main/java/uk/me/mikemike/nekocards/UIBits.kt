@@ -32,6 +32,12 @@ fun BitsPopupMenuItemWithIcon(text: String, onClick: () -> Unit, enabled: Boolea
 
 }
 
+@Composable
+fun BitsIconButton(enabled: Boolean=true, icon: ImageVector, iconContentDesc: String = String.Empty, onClick: () -> Unit){
+    IconButton(onClick = onClick, enabled = enabled) {
+        Icon(icon, iconContentDesc, tint=MaterialTheme.colors.primary)
+    }
+}
 
 @Composable
 fun BitsButtonWithText(onClick: () -> Unit, enabled: Boolean, text: String) {
