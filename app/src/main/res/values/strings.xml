@@ -40,6 +40,7 @@
     <string name="new_deck_default_name"></string>
     <string name="new_deck_default_description">It is a deck</string>
 
+    <string name="add_card_floating_action_button_text">Add Card</string>
 
     <string name="quiz_screen_title_bar">%s Quiz</string>
     <string name="quiz_question_count"> Q:%d/%d</string>
