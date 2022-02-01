@@ -21,7 +21,7 @@ import androidx.navigation.NavHostController
 import uk.me.mikemike.nekocards.ui.theme.NekoCardsTheme
 
 
-typealias DeckMethod = (Deck) -> Unit
+
 
 @Composable
 fun DeckListScreenTop(nav: NavHostController) {
@@ -154,7 +154,7 @@ fun EditDeckPart(deck: Deck, update: (Deck) -> Unit){
                 deck.sideAName = it
                 update(deck)
             },
-            label = { Text(stringResource(R.string.deck_description_sideA_label)) }
+            label = { Text(stringResource(R.string.deck_sideA_label)) }
         )
         TextField(modifier = Modifier.padding(bottom = 8.dp),
             value = deck.sideBName,
@@ -162,7 +162,7 @@ fun EditDeckPart(deck: Deck, update: (Deck) -> Unit){
                 deck.sideBName = it
                 update(deck)
             },
-            label = { Text(stringResource(R.string.deck_description_sideB_label)) }
+            label = { Text(stringResource(R.string.deck_sideB_label)) }
         )
     }
 }

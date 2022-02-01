@@ -24,8 +24,11 @@
 
     <string name="deck_name_label">Deck Name</string>
     <string name="deck_description_label">Deck Description</string>
-    <string name="deck_description_sideA_label">Card Side A Title</string>
-    <string name="deck_description_sideB_label">Card Side B Title</string>
+    <string name="deck_sideA_label">Card Side A Title</string>
+    <string name="deck_sideB_label">Card Side B Title</string>
+    <string name="deck_sideA_label_with_template">Card Side A Title: %s</string>
+    <string name="deck_sideB_label_with_template">Card Side B Title: %s</string>
+    <string name="deck_card_labels">Card Labels</string>
 
 
     <string name="delete_card_confirmation_dialog">Really Delete Card</string>
@@ -41,6 +44,11 @@
     <string name="new_deck_default_description">It is a deck</string>
 
     <string name="add_card_floating_action_button_text">Add Card</string>
+
+
+    <string name="edit_deck_tabs_cards">Cards</string>
+    <string name="edit_deck_tabs_details">Details</string>
+    <string name="edit_deck_appbar_title">Edit %s</string>
 
     <string name="quiz_screen_title_bar">%s Quiz</string>
     <string name="quiz_question_count"> Q:%d/%d</string>

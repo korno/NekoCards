@@ -19,24 +19,32 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import uk.me.mikemike.nekocards.ui.theme.NekoCardsTheme
 
-typealias CardMethod = (Card)->Unit
-
 
 @Composable
-fun DeckEditScreen(
-    deck: DeckWithCards, onAddCard: (Card) -> Unit, onDeleteCard: (Card) -> Unit,
-    onEditDeck: (Deck) -> Unit, onEditCard: (Card) -> Unit, defaultTab: Int=1
-) {
+fun DeckEditTopBar(deck: DeckWithCards){
+    TopAppBar(
+        title = { Text(stringResource(R.string.edit_deck_appbar_title, deck.deck.name))}
+    )
+}
 
-    var showEditDialog by remember {
+@Composable
+fun DeckEditAddCardFloatingButton(onClick: () -> Unit){
+    ExtendedFloatingActionButton(
+        onClick = onClick,
+        text = { Text(stringResource(id = R.string.add_card_floating_action_button_text))},
+        icon = {Icon(Icons.Filled.AddBox, stringResource(id = R.string.add_card_floating_action_button_text))}
+            )
+}
+
+@Composable
+fun DeckEditScreenX(deck: DeckWithCards, onAddCard: CardMethod, onDeleteCard: CardMethod,
+                    onEditDeck: DeckMethod, onEditCard: CardMethod, defaultTab: Int=0
+) {
+    var showEditDeckDetailsDialog by remember {
         mutableStateOf(false)
     }
 
     var showCardCreateDialog by remember {
-        mutableStateOf(false)
-    }
-
-    var showCardEditDialog by remember {
         mutableStateOf(false)
     }
 
@@ -48,46 +56,29 @@ fun DeckEditScreen(
         mutableStateOf(null)
     }
 
-    var selectedTab by remember{
-        mutableStateOf(defaultTab)
-    }
-
-    var tabs = listOf("Cards", "Details")
-    Scaffold(
-        topBar = { TopAppBar(title = { Text("Edit " + deck.deck.name) }) },
-
-        content = {
-
-        Column(modifier=Modifier.fillMaxWidth()) {
-            TabRow(selectedTabIndex = selectedTab){
-                tabs.forEachIndexed() { index, title ->
-                    Tab(
-                        content = { Text(modifier= Modifier.padding(8.dp), text=title) },
-                        onClick = { selectedTab = index },
-                        selected = index == selectedTab
-                    )
-                }
-            }
-
-            when(selectedTab){
-                0 -> {DeckCardsList(deck, {cardToDelete=it}, {
+    val bitsScaffoldTabs = listOf(
+        BitsTabScreenItem(
+            topBar = {DeckEditTopBar(deck)},
+            content = {
+                DeckCardsList(deck, {cardToDelete=it}, {
                     editingCard=it.copy()
-                    showCardEditDialog=true
-                })}
-                1 -> { DeckDetails(deck.deck)
-                    Row(modifier=Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End){Button(modifier=Modifier.padding(8.dp), onClick = { showEditDialog = true }) { Text("Edit Details") }}
-                   }
-            }
-        }
-    },
-        floatingActionButtonPosition = FabPosition.Center,
-        floatingActionButton = {if(selectedTab == 0){
-            ExtendedFloatingActionButton(
-                onClick = { showCardCreateDialog = true },
-                text = { Text(stringResource(id = R.string.add_card_floating_action_button_text))},
-                icon = {Icon(Icons.Filled.AddBox, stringResource(id = R.string.add_card_floating_action_button_text))}
-            )
-        } else {}})
+                })
+            },
+            floatingActionButton = {DeckEditAddCardFloatingButton { showCardCreateDialog = true } },
+            name = stringResource(id = R.string.edit_deck_tabs_cards)
+        ),
+        BitsTabScreenItem(
+            topBar = {DeckEditTopBar(deck)},
+            content = {
+                DeckDetails(deck.deck)
+                Row(modifier=Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End){Button(modifier=Modifier.padding(8.dp), onClick = { showEditDeckDetailsDialog = true }) { Text("Edit Details") }}
+            },
+            floatingActionButton = {},
+            name = stringResource(id = R.string.edit_deck_tabs_details)
+        )
+    )
+
+    BitsTabsScreenScaffold(tabs = bitsScaffoldTabs, defaultSelectedTab = defaultTab)
 
     when {
         cardToDelete != null -> {
@@ -99,11 +90,11 @@ fun DeckEditScreen(
                 onConfirm = {onDeleteCard(it); cardToDelete=null}
             )
         }
-        showEditDialog -> {
+        showEditDeckDetailsDialog -> {
             DeckEditDialog(deck.deck.copy(), {
-                showEditDialog=false
+                showEditDeckDetailsDialog=false
                 onEditDeck(it)},
-                {showEditDialog=false}
+                {showEditDeckDetailsDialog=false}
             )
         }
         showCardCreateDialog -> {
@@ -113,38 +104,49 @@ fun DeckEditScreen(
                     showCardCreateDialog = false
                     onAddCard(it)
                 },
-            sideADisplayName = deck.deck.sideAName,
-            sideBDisplayName = deck.deck.sideBName)
+                sideADisplayName = deck.deck.sideAName,
+                sideBDisplayName = deck.deck.sideBName)
         }
-        showCardEditDialog -> {
-            CardDialog(startValues = editingCard!!, onCancel = {showCardEditDialog=false}, onFinish = {
-                showCardEditDialog=false
+        editingCard != null -> {
+            CardDialog(startValues = editingCard!!, onCancel = {editingCard=null}, onFinish = {
+                editingCard=null
                 onEditCard(it)} )
         }
     }
 
+
 }
+
 
 
 @Composable
 fun DeckDetails(deck: Deck){
-    Text(modifier=Modifier.fillMaxWidth().padding(8.dp), textAlign = TextAlign.Center, text=deck.name, style = MaterialTheme.typography.h4)
+    Text(modifier= Modifier
+        .fillMaxWidth()
+        .padding(8.dp), textAlign = TextAlign.Center, text=deck.name, style = MaterialTheme.typography.h4)
 
-    Text(modifier=Modifier.fillMaxWidth().padding(8.dp), text="Description", fontWeight = FontWeight.Bold)
-    Text(modifier=Modifier.fillMaxWidth().padding(8.dp), text=deck.description)
-    Divider()
+    BitsBoldedHeading(stringResource(R.string.deck_description_label))
+    Text(modifier= Modifier
+        .fillMaxWidth()
+        .padding(start = 8.dp, end = 8.dp), text=deck.description)
 
-    Text(modifier=Modifier.fillMaxWidth().padding(8.dp), text="Card Labels", fontWeight = FontWeight.Bold)
-    Text(modifier=Modifier.fillMaxWidth().padding(start=8.dp, end=8.dp), text="Card Side A Name:")
-    Text(modifier=Modifier.fillMaxWidth().padding(start=8.dp, end=8.dp, bottom=8.dp), text="Card Side B Name; ")
+    BitsBoldedHeading(stringResource(R.string.deck_card_labels))
+    Text(modifier= Modifier
+        .fillMaxWidth()
+        .padding(start = 8.dp, end = 8.dp), text=stringResource(R.string.deck_sideA_label_with_template, deck.sideAName))
+    Text(modifier= Modifier
+        .fillMaxWidth()
+        .padding(start = 8.dp, end = 8.dp, bottom = 8.dp), text=stringResource(R.string.deck_sideB_label_with_template, deck.sideBName))
+
     Divider()
 }
 
 @Composable
-fun DeckCardsList(deck: DeckWithCards, onDelete: (Card) -> Unit, onEdit: (Card) -> Unit){
+fun DeckCardsList(deck: DeckWithCards, onDelete: CardMethod, onEdit: CardMethod){
 
     Row(modifier = Modifier
-        .fillMaxWidth().background(MaterialTheme.colors.primaryVariant)
+        .fillMaxWidth()
+        .background(MaterialTheme.colors.primaryVariant)
         .padding(10.dp), verticalAlignment = Alignment.CenterVertically){
         Text(modifier= Modifier
             .weight(0.4f)
@@ -220,12 +222,13 @@ fun DeckEditDialog(deck: Deck, onConfirm: (Deck) -> Unit, onCancel: () -> Unit){
 fun DeckEditPreviewDetails(){
     NekoCardsTheme() {
         val deck = createTestDeck("name", "description", 20)
-        DeckEditScreen(
+        DeckEditScreenX(
             deck = deck,
             onAddCard = {},
             onDeleteCard = {},
             onEditDeck = {},
-            onEditCard = {})
+            onEditCard = {},
+        defaultTab = 1)
     }
 }
 
@@ -234,7 +237,7 @@ fun DeckEditPreviewDetails(){
 fun DeckEditPreviewCards(){
     NekoCardsTheme() {
         val deck = createTestDeck("name", "description", 20)
-        DeckEditScreen(
+        DeckEditScreenX(
             deck = deck,
             onAddCard = {},
             onDeleteCard = {},

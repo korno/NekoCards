@@ -5,15 +5,23 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+
+typealias ComposableFunc = @Composable () -> Unit
+
+@Composable
+fun BitsBoldedHeading(text: String){
+    Text(modifier= Modifier
+        .fillMaxWidth()
+        .padding(8.dp), text=text, fontWeight = FontWeight.Bold)
+}
 
 @Composable
 fun BitsPopupMenuItem(text: String, onClick: () -> Unit, enabled: Boolean = true){
@@ -73,6 +81,94 @@ fun BitsOutlinedButtonWithIcon(
 }
 
 
+class BitsTab(
+    public val name: String,
+    public val content: @Composable () -> Unit,
+){
+
+}
+
+
+
+data class BitsTabScreenItem(
+    val topBar: ComposableFunc = {},
+    val floatingActionButton: ComposableFunc ={},
+    val floatingActionButtonPosition: FabPosition = FabPosition.Center,
+    val name: String,
+    val content: ComposableFunc
+){
+
+}
+
+@Composable
+fun BitsTabsScreenScaffold(tabs: List<BitsTabScreenItem>, defaultSelectedTab: Int) {
+
+    var selectedTabIndex by remember {
+        mutableStateOf(defaultSelectedTab)
+    }
+
+    val selectedTab = tabs[selectedTabIndex]
+
+    Scaffold(
+
+        topBar = selectedTab.topBar,
+        floatingActionButton = selectedTab.floatingActionButton,
+        floatingActionButtonPosition = selectedTab.floatingActionButtonPosition
+        ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            TabRow(selectedTabIndex = selectedTabIndex) {
+                tabs.forEachIndexed { index, bitsTabScreenItem ->
+                    Tab(
+                        onClick = { selectedTabIndex = index },
+                        selected = selectedTabIndex == index,
+                        content = {
+                            TabItemText(text = bitsTabScreenItem.name)
+                        })
+                }
+            }
+            selectedTab.content()
+        }
+    }
+}
+
+@Composable
+fun TabItemText(text: String){
+    Text(modifier = Modifier.padding(8.dp), text = text)
+}
+
+
+
+@Composable
+fun BitsTabs(
+    tabs: List<BitsTab>,
+   defaultSelectedTab: Int
+){
+
+    var selectedTab by remember {
+        mutableStateOf(defaultSelectedTab)
+    }
+
+    Column(modifier=Modifier.fillMaxWidth()) {
+        TabRow(selectedTabIndex = selectedTab) {
+            tabs.forEachIndexed() { index, title ->
+                Tab(
+                    content = { Text(modifier = Modifier.padding(8.dp), text = title.name) },
+                    onClick = { selectedTab = index },
+                    selected = index == selectedTab
+                )
+            }
+        }
+        tabs[selectedTab].content()
+    }
+}
+
+
+@Composable
+@Preview
+fun TabsTest(){
+    val tabs = mutableListOf<BitsTab>(BitsTab("Tab 1", {Text("Tab 1 Content")}), BitsTab("Tab 2", {Text("Tab 2 Content")}))
+    BitsTabs(tabs = tabs, defaultSelectedTab = 0)
+}
 
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -188,6 +284,14 @@ fun <T> BitsEditItemDialog(
         },
         title = {Text(title)}
     )
+}
+
+
+@Composable
+fun BitsTextTopAppBar(title: String){
+    TopAppBar() {
+        Text(title)
+    }
 }
 
 @Composable
