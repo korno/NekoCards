@@ -10,4 +10,8 @@ fun navigateToQuiz(deckId: Long, nav: NavHostController) {
     nav.navigate("$deckId/quiz")
 }
 
-
+fun navigateToDeckList(nav: NavHostController){
+    nav.navigate("main"){
+        popUpTo(0)
+    }
+}

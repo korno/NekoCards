@@ -1,17 +1,16 @@
 package uk.me.mikemike.nekocards
 
+import android.app.Application
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -20,7 +19,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import uk.me.mikemike.kotlinwani.RequestStatus
+import uk.me.mikemike.kotlinwani.SubjectResourceRequestResult
+import uk.me.mikemike.kotlinwani.UserRequestResult
+import uk.me.mikemike.nekocards.kotlinwani.KotlinWaniViewModel
 import uk.me.mikemike.nekocards.ui.theme.NekoCardsTheme
+
 
 class MainActivity : ComponentActivity() {
 
@@ -47,8 +51,9 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             NekoCardsTheme {
-                Surface() {
-                    NekoCardsTop()
+                Surface {
+                    KotlinWani()
+                //NekoCardsTop()
                 }
 
             }
@@ -58,15 +63,70 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
+fun KotlinWani(){
+
+    val kwViewModel = viewModel<KotlinWaniViewModel>(
+        key = null,
+        factory = KotlinWaniViewModel.Factory("", LocalContext.current.applicationContext as Application)
+    )
+    val userName: UserRequestResult? by kwViewModel.user.observeAsState();
+    val firstSubject: SubjectResourceRequestResult? by kwViewModel.theFirstSubject.observeAsState()
+
+    Column() {
+
+        userName!!.let {
+            when (it.status) {
+                RequestStatus.LOADING -> {
+                    Text("Loading")
+                }
+                RequestStatus.FAILED -> {
+                    Text("Unable to Load user data error:" + it.error)
+                }
+                RequestStatus.LOADED -> {
+                    Column() {
+                        Text("Loaded: User name is :" + it.data!!.data.userName)
+                        Text("User profile URL is: " + it.data!!.data.profileUrl)
+                        Text("User type:" + it.data!!.data.subscription.type)
+                        Text("account created on: " + it.data!!.data.createdDate.toString())
+                        Text("lesson order:" + it.data!!.data.preferences.lessonPresentationOrder)
+                    }
+                }
+            }
+        }
+
+        firstSubject!!.let {
+            when (it.status) {
+                RequestStatus.LOADING -> {
+                    Text("Loading Subject")
+                }
+                RequestStatus.FAILED -> {
+                    Text("Unable to Load subject data error:" + it.error )
+                }
+                RequestStatus.LOADED -> {
+                    Column() {
+                        Text("type =" + it.data!!.data.toString())
+                    }
+                }
+            }
+        }
+
+    }
+
+    if(userName!!.status ==  RequestStatus.LOADING){
+        Text("Loading User Data")
+    }
+}
+
+@Composable
 fun NekoCardsTop() {
 
     val navController = rememberNavController()
 
         NavHost(
             navController = navController,
-            startDestination = "decks"
+            startDestination = "main"
         ) {
-            composable("decks") {
+            composable("main") {
                 DeckListScreenTop(navController)
             }
             composable(route = "{deckid}/edit",
@@ -74,7 +134,7 @@ fun NekoCardsTop() {
                     navArgument("deckid") { type = NavType.LongType }
                 )) { entry ->
                 val id = entry.arguments!!.getLong("deckid")
-                DeckEditScreenTop(deckId = id)
+                DeckEditScreenTop(deckId = id, navController )
             }
             composable(route = "{deckid}/quiz",
                 arguments = listOf(
@@ -94,55 +154,7 @@ fun NekoCardsTop() {
 
 
 
-@Composable
-fun DeckEditScreenTop(deckId: Long) {
 
-    val deckEditViewModel = viewModel<DeckEditViewModel>(
-        key = null,
-        factory = DeckEditViewModelFactory(
-            (LocalContext.current.applicationContext as NekoCardsApplication).deckDataRepository,
-            deckId
-        )
-    )
-    val editingDeck: DeckWithCards? by deckEditViewModel.currentlyEditingDeck.observeAsState(initial = null)
-    val lastCardInsertId: Long by deckEditViewModel.lastCardInsertId.observeAsState(initial = 0)
-    var showCardAddedConfirmation = remember(lastCardInsertId){
-        lastCardInsertId
-    }
-    val lastCardDeleteId: Long by deckEditViewModel.lastCardDeleteId.observeAsState(initial = 0)
-    var showCardDeletedConfirmation = remember(lastCardDeleteId){
-        lastCardDeleteId
-    }
-    val context = LocalContext.current;
-
-    val cardDeletedMessage = remember{context.getString(R.string.card_deleted_message)}
-    val cardAddedMessage = remember{context.getString(R.string.card_created_message)}
-
-
-    LaunchedEffect(key1 = showCardAddedConfirmation){
-        if(showCardAddedConfirmation > 0){
-            Toast.makeText(context, cardAddedMessage, Toast.LENGTH_SHORT).show()
-            showCardAddedConfirmation = 0
-        }
-    }
-    LaunchedEffect(key1 = showCardDeletedConfirmation){
-        if(showCardDeletedConfirmation > 0){
-            Toast.makeText(context, cardDeletedMessage, Toast.LENGTH_SHORT).show()
-            showCardDeletedConfirmation = 0
-        }
-    }
-
-    if (editingDeck != null) {
-        DeckEditScreenX(
-            deck = editingDeck!!,
-            onAddCard = { deckEditViewModel.addCardToCurrentlyEditingDeck(it) },
-            onDeleteCard = { deckEditViewModel.deleteCard(it) },
-            onEditDeck = { deckEditViewModel.updateCurrentlyEditingDeck(it)},
-            onEditCard = { deckEditViewModel.updateCard(it)})
-    } else {
-        Text("Error deck not found deckId" + deckId)
-    }
-}
 
 @Preview(showBackground = true)
 @Composable

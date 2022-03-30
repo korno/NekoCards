@@ -1,25 +1,41 @@
 package uk.me.mikemike.nekocards
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.remember
 import androidx.lifecycle.*
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-import java.lang.IllegalArgumentException
+
+
+public class Data<T>(var status: LoadStatus, var value: T?)
+
+enum class LoadStatus {LOADING, ERROR, LOADED}
 
 class DeckEditViewModel(val deckDataRepository: DeckDataRepository, val deckId: Long) : ViewModel() {
 
+    private val _editingDeck: MutableLiveData<Data<DeckWithCards>> = MutableLiveData(Data(LoadStatus.LOADING, null))
+
+
+    private val _loadStatus: MutableLiveData<LoadStatus> = MutableLiveData<LoadStatus>(LoadStatus.LOADING)
+    public val loadStatus: LiveData<LoadStatus>
+        get() = _loadStatus
+
     val currentlyEditingDeck: MutableLiveData<DeckWithCards> by lazy {
         val c = MutableLiveData<DeckWithCards>(null)
+        _loadStatus.postValue(LoadStatus.LOADING)
         viewModelScope.launch(Dispatchers.IO){
-            c.postValue(deckDataRepository.getDeckWIthCardsById(deckId).firstOrNull())
+            val deck = deckDataRepository.getDeckWIthCardsById(deckId).firstOrNull()
+            if(deck == null){
+                _loadStatus.postValue(LoadStatus.ERROR)
+                c.postValue(null)
+            }
+            else{
+                _loadStatus.postValue(LoadStatus.LOADED)
+                c.postValue(deck)
+            }
+
         }
         c
     }
-
 
     private val _lastCardInsertId: MutableLiveData<Long> = MutableLiveData(0)
     val lastCardInsertId: LiveData<Long>

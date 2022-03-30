@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
@@ -134,21 +133,21 @@ fun DeckListScreen(
 @Composable
 fun EditDeckPart(deck: Deck, update: (Deck) -> Unit){
     Column {
-        TextField(modifier = Modifier.padding(bottom = 8.dp, top=8.dp),
+        OutlinedTextField(modifier = Modifier.padding(bottom = 8.dp, top=8.dp),
             value = deck.name,
             onValueChange = {
                 deck.name = it
                 update(deck)
             },
             label = { Text(stringResource(id = R.string.deck_name_label)) })
-        TextField(modifier = Modifier.padding(bottom = 8.dp),
+        OutlinedTextField(modifier = Modifier.padding(bottom = 8.dp),
             value = deck.description,
             onValueChange = {
                 deck.description = it
                 update(deck)
             },
             label = { Text(stringResource(R.string.deck_description_label)) })
-        TextField(modifier = Modifier.padding(bottom = 8.dp),
+        OutlinedTextField(modifier = Modifier.padding(bottom = 8.dp),
             value = deck.sideAName,
             onValueChange = {
                 deck.sideAName = it
@@ -156,7 +155,7 @@ fun EditDeckPart(deck: Deck, update: (Deck) -> Unit){
             },
             label = { Text(stringResource(R.string.deck_sideA_label)) }
         )
-        TextField(modifier = Modifier.padding(bottom = 8.dp),
+        OutlinedTextField(modifier = Modifier.padding(bottom = 8.dp),
             value = deck.sideBName,
             onValueChange = {
                 deck.sideBName = it

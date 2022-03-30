@@ -1,5 +1,6 @@
 package uk.me.mikemike.nekocards
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,14 +11,78 @@ import androidx.compose.material.icons.filled.AddBox
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import uk.me.mikemike.nekocards.ui.theme.NekoCardsTheme
+
+@Composable
+fun DeckEditScreenTop(deckId: Long, nav: NavHostController) {
+
+    val deckEditViewModel = viewModel<DeckEditViewModel>(
+        key = null,
+        factory = DeckEditViewModelFactory(
+            (LocalContext.current.applicationContext as NekoCardsApplication).deckDataRepository,
+            deckId
+        )
+    )
+    val status: LoadStatus? by deckEditViewModel.loadStatus.observeAsState()
+    val editingDeck: DeckWithCards? by deckEditViewModel.currentlyEditingDeck.observeAsState(initial = null)
+    val lastCardInsertId: Long by deckEditViewModel.lastCardInsertId.observeAsState(initial = 0)
+    var showCardAddedConfirmation = remember(lastCardInsertId){
+        lastCardInsertId
+    }
+    val lastCardDeleteId: Long by deckEditViewModel.lastCardDeleteId.observeAsState(initial = 0)
+    var showCardDeletedConfirmation = remember(lastCardDeleteId){
+        lastCardDeleteId
+    }
+    val context = LocalContext.current;
+
+    val cardDeletedMessage = remember{context.getString(R.string.card_deleted_message)}
+    val cardAddedMessage = remember{context.getString(R.string.card_created_message)}
+
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(key1 = showCardAddedConfirmation){
+        if(showCardAddedConfirmation > 0){
+            Toast.makeText(context, cardAddedMessage, Toast.LENGTH_SHORT).show()
+            showCardAddedConfirmation = 0
+        }
+    }
+    LaunchedEffect(key1 = showCardDeletedConfirmation){
+        if(showCardDeletedConfirmation > 0){
+            Toast.makeText(context, cardDeletedMessage, Toast.LENGTH_SHORT).show()
+            showCardDeletedConfirmation = 0
+        }
+    }
+
+    if(status == LoadStatus.ERROR){
+       LaunchedEffect(status == LoadStatus.ERROR){
+           navigateToDeckList(nav)
+       }
+    }
+    else {
+        if (editingDeck != null) {
+            DeckEditScreenX(
+                deck = editingDeck!!,
+                onAddCard = { deckEditViewModel.addCardToCurrentlyEditingDeck(it) },
+                onDeleteCard = { deckEditViewModel.deleteCard(it) },
+                onEditDeck = { deckEditViewModel.updateCurrentlyEditingDeck(it) },
+                onEditCard = { deckEditViewModel.updateCard(it) })
+        } else {
+            // the deck was not found die
+
+        }
+    }
+}
 
 
 @Composable
@@ -98,7 +163,7 @@ fun DeckEditScreenX(deck: DeckWithCards, onAddCard: CardMethod, onDeleteCard: Ca
             )
         }
         showCardCreateDialog -> {
-            CardDialog(startValues = Card(0, deck.deck.deckId, "", ""),
+            CardDialogX(startValues = Card(0, deck.deck.deckId, "", ""),
                 onCancel = { showCardCreateDialog = false },
                 onFinish = {
                     showCardCreateDialog = false
@@ -108,9 +173,11 @@ fun DeckEditScreenX(deck: DeckWithCards, onAddCard: CardMethod, onDeleteCard: Ca
                 sideBDisplayName = deck.deck.sideBName)
         }
         editingCard != null -> {
-            CardDialog(startValues = editingCard!!, onCancel = {editingCard=null}, onFinish = {
+            CardDialogX(startValues = editingCard!!.copy(), onCancel = {editingCard=null}, onFinish = {
                 editingCard=null
-                onEditCard(it)} )
+                onEditCard(it)},
+            sideBDisplayName = deck.deck.sideBName,
+            sideADisplayName = deck.deck.sideAName)
         }
     }
 
@@ -186,33 +253,13 @@ fun CardEditDisplay(card: Card, onEdit: CardMethod = {}, onDelete: CardMethod = 
 }
 
 @Composable
-fun DeckEditDialog(deck: Deck, onConfirm: (Deck) -> Unit, onCancel: () -> Unit){
+fun DeckEditDialog(deck: Deck, onConfirm: DeckMethod, onCancel: () -> Unit){
     BitsEditItemDialog(
         item = deck,
-        edit = { deck, update ->
-            Column() {
-                TextField(value = deck.name, onValueChange = {
-                    deck.name = it
-                    update(deck)
-                }
-                )
-                TextField(value = deck.description, onValueChange = {
-                    deck.description = it
-                    update(deck)
-                })
-                TextField(value = deck.sideAName, onValueChange = {
-                    deck.sideAName = it
-                    update(deck)
-                })
-                TextField(value=deck.sideBName, onValueChange = {
-                    deck.sideBName = it
-                    update(deck)
-                })
-            }
-        },
+        edit = {deck, update -> EditDeckPart(deck = deck, update = update)},
         onConfirm = onConfirm,
         onCancel = onCancel,
-        isValid = {it.name.isNotEmpty()}
+        isValid = {it.name.isNotEmpty() && it.sideAName.isNotEmpty() && it.sideBName.isNotEmpty()}
     )
 }
 
